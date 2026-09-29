@@ -21,6 +21,8 @@ const TICK_MS = 15 * 1000;
 const isMac = process.platform === 'darwin';
 const supportsLoginItem = process.platform === 'win32' || isMac;
 const loginItemLabel = isMac ? 'Abrir al iniciar sesión' : 'Iniciar con Windows';
+// Aviso de muestra que se abre con "Probar aviso" en Ajustes; no cambia ningún marcaje.
+const PREVIEW_ID = 'preview';
 
 let store;
 let config;
@@ -31,6 +33,7 @@ let mainWindow = null;
 let reminderWindow = null;
 let reminderId = null;
 let reminderAlertAt = null;
+let reminderLarge = false;
 let quitting = false;
 
 if (!app.requestSingleInstanceLock()) {
@@ -55,7 +58,9 @@ function start() {
   if (config.openAtLogin) applyLoginItem();
   nativeTheme.themeSource = config.theme;
   nativeTheme.on('updated', () => {
-    for (const win of BrowserWindow.getAllWindows()) win.setBackgroundColor(backgroundColor());
+    if (mainWindow) mainWindow.setBackgroundColor(backgroundColor());
+    // El aviso grande es transparente: no se le pone fondo.
+    if (reminderWindow && !reminderLarge) reminderWindow.setBackgroundColor(backgroundColor());
   });
 
   createTray();
@@ -129,6 +134,7 @@ function isKnownId(id) {
 }
 
 function setMarked(id, done) {
+  if (id === PREVIEW_ID) return closeReminder();
   if (!isKnownId(id)) return;
   if (done) state.marked[id] = Date.now();
   else delete state.marked[id];
@@ -138,6 +144,7 @@ function setMarked(id, done) {
 }
 
 function snooze(id) {
+  if (id === PREVIEW_ID) return closeReminder();
   const now = new Date();
   const item = schedule.buildAgenda(config, state, now).find((i) => i.id === id);
   if (!item) return;
@@ -193,8 +200,11 @@ function tick() {
 
   const agenda = schedule.buildAgenda(config, state, now);
   const due = schedule.pickDue(config, state, agenda, now);
-  if (!due) closeReminder();
-  else if (due.id !== reminderId || due.alertAt !== reminderAlertAt) openReminder(due);
+  if (!due) {
+    if (reminderId !== PREVIEW_ID) closeReminder();
+  } else if (due.id !== reminderId || due.alertAt !== reminderAlertAt) {
+    openReminder(due);
+  }
 
   refreshTray(agenda, due, now);
   for (const win of BrowserWindow.getAllWindows()) win.webContents.send('state:changed');
@@ -244,16 +254,26 @@ function showMain() {
   });
 }
 
-function openReminder(item) {
-  closeReminder();
+// Aviso pequeño: esquina inferior derecha de la pantalla principal.
+function smallBounds(item, workArea) {
   const width = 380;
   const height = item.kind === 'task' ? 200 : 176;
-  const { workArea } = screen.getPrimaryDisplay();
-  const win = new BrowserWindow({
+  return {
     width,
     height,
     x: workArea.x + workArea.width - width - 16,
     y: workArea.y + workArea.height - height - 16,
+  };
+}
+
+function openReminder(item) {
+  closeReminder();
+  const large = config.alertStyle === 'large';
+  const display = screen.getPrimaryDisplay();
+  // Aviso grande: cubre la pantalla principal salvo la barra de tareas (Windows no deja taparla).
+  const bounds = large ? display.workArea : smallBounds(item, display.workArea);
+  const win = new BrowserWindow({
+    ...bounds,
     frame: false,
     resizable: false,
     minimizable: false,
@@ -263,14 +283,24 @@ function openReminder(item) {
     alwaysOnTop: true,
     show: false,
     title: 'WorkTime',
-    backgroundColor: backgroundColor(),
+    // El aviso grande es transparente: la página pinta el fondo oscuro semitransparente.
+    transparent: large,
+    backgroundColor: large ? '#00000000' : backgroundColor(),
     webPreferences: { ...webPreferences, autoplayPolicy: 'no-user-gesture-required' },
   });
   win.setAlwaysOnTop(true, 'screen-saver');
   if (isMac) win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
-  win.loadFile(path.join(__dirname, 'renderer', 'reminder.html'));
-  // showInactive: el aviso aparece encima de todo sin quitarte el foco de lo que estés escribiendo.
-  win.once('ready-to-show', () => win.showInactive());
+  win.loadFile(path.join(__dirname, 'renderer', 'reminder.html'), { query: { size: large ? 'large' : 'small' } });
+  win.once('ready-to-show', () => {
+    if (large) {
+      // El aviso grande toma el foco para poder responder con el teclado (Esc = más tarde).
+      win.show();
+      win.focus();
+    } else {
+      // El pequeño aparece encima de todo sin quitarte el foco de lo que estés escribiendo.
+      win.showInactive();
+    }
+  });
   win.on('closed', () => {
     if (reminderWindow !== win) return;
     reminderWindow = null;
@@ -280,6 +310,7 @@ function openReminder(item) {
   reminderWindow = win;
   reminderId = item.id;
   reminderAlertAt = item.alertAt;
+  reminderLarge = large;
 }
 
 function closeReminder() {
@@ -291,8 +322,23 @@ function closeReminder() {
   win.destroy();
 }
 
-// Textos del aviso emergente según sea un marcaje o el reporte diario.
+function previewReminder() {
+  openReminder({ id: PREVIEW_ID, kind: 'clock', alertAt: Date.now() });
+}
+
+// Textos del aviso emergente según sea un marcaje, el reporte diario o la vista previa.
 function reminderView() {
+  if (reminderId === PREVIEW_ID) {
+    return {
+      id: PREVIEW_ID,
+      eyebrow: 'Vista previa',
+      title: 'Entrada',
+      sub: 'Así se verán tus avisos',
+      doneLabel: 'Ya marqué',
+      laterLabel: 'Cerrar',
+      sound: config.sound,
+    };
+  }
   const now = new Date();
   const t = now.getTime();
   const item = schedule.buildAgenda(config, state, now).find((i) => i.id === reminderId);
@@ -401,5 +447,6 @@ function registerIpc() {
   ipcMain.handle('mark:set', (_event, id, done) => setMarked(id, done));
   ipcMain.handle('pause:set', (_event, paused) => setPaused(paused));
   ipcMain.handle('reminder:get', () => reminderView());
+  ipcMain.handle('reminder:preview', () => previewReminder());
   ipcMain.handle('reminder:snooze', (_event, id) => snooze(id));
 }

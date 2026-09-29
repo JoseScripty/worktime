@@ -186,6 +186,12 @@ test('sanitizeConfig valida el reporte y el tema', () => {
   assert.equal(sanitizeConfig({ report: { firstMinutes: 10 } }).report.secondMinutes, 9);
 });
 
+test('sanitizeConfig valida el tipo de aviso', () => {
+  assert.equal(sanitizeConfig(null).alertStyle, 'small');
+  assert.equal(sanitizeConfig({ alertStyle: 'large' }).alertStyle, 'large');
+  assert.equal(sanitizeConfig({ alertStyle: 'gigante' }).alertStyle, 'small');
+});
+
 // ---------- Historial ----------
 
 test('archiveDay guarda qué tocaba cada día y a qué hora se confirmó', () => {

@@ -22,7 +22,11 @@ de cada marcaje y sigue insistiendo hasta que confirmas que ya pasaste por el de
 ## Funciones
 
 - **Cuatro marcajes al día:** entrada (09:00), salida a almorzar (13:00), regreso (14:00) y salida (18:00), de lunes a viernes. Los nombres, las horas y los días se pueden cambiar.
-- **Aviso emergente:** aparece encima de todo con un sonido corto y no te quita el foco. Tiene dos botones: *Ya marqué* y *Recordar en 5 min*.
+- **Aviso pequeño o grande, a tu elección:**
+  - *Pequeño en la esquina*: el predeterminado; aparece encima de todo y no te quita el foco.
+  - *Grande en pantalla*: oscurece la pantalla y muestra el aviso en el centro hasta que respondas.
+
+  Los dos suenan al aparecer y tienen los botones *Ya marqué* y *Recordar en 5 min*.
 - **Insiste hasta que marcas:** el aviso sigue activo hasta 90 minutos o hasta el siguiente marcaje. También salta al desbloquear la sesión o despertar el equipo.
 - **Reporte diario:** *«RECUERDE ENVIAR EL REPORTE DIARIO»* 30 minutos antes de la salida y, si no lo confirmas, otra vez 15 minutos antes.
 - **Historial:** la hora de cada marcaje de los últimos 60 días.

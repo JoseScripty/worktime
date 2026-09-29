@@ -198,6 +198,7 @@ function fillSettings() {
   $('sound').checked = config.sound;
   $('openAtLogin').checked = config.openAtLogin;
   document.querySelector(`input[name="theme"][value="${config.theme}"]`).checked = true;
+  document.querySelector(`input[name="alertStyle"][value="${config.alertStyle}"]`).checked = true;
 }
 
 function readSettings() {
@@ -223,6 +224,7 @@ function readSettings() {
     snoozeMinutes: num('snooze'),
     giveUpMinutes: num('giveUp'),
     sound: $('sound').checked,
+    alertStyle: document.querySelector('input[name="alertStyle"]:checked').value,
     openAtLogin: $('openAtLogin').checked,
     theme: document.querySelector('input[name="theme"]:checked').value,
   };
@@ -235,6 +237,7 @@ async function refreshLoginStatus() {
 }
 
 $('openLoginItems').addEventListener('click', () => api.openLoginItems());
+$('previewAlert').addEventListener('click', () => api.previewReminder());
 
 // Guarda al momento; lo que no sea válido vuelve a su valor anterior o por defecto.
 async function save() {

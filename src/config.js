@@ -24,11 +24,14 @@ const DEFAULT_CONFIG = {
   // Si no marcas, el aviso se retira pasado este tiempo (o al llegar el siguiente marcaje).
   giveUpMinutes: 90,
   sound: true,
+  // 'small': ventana pequeña en la esquina · 'large': aviso grande que ocupa toda la pantalla.
+  alertStyle: 'small',
   openAtLogin: false,
   theme: 'system', // 'system' | 'light' | 'dark'
 };
 
 const THEMES = ['system', 'light', 'dark'];
+const ALERT_STYLES = ['small', 'large'];
 
 function clampInt(value, min, max, fallback) {
   const n = Number(value);
@@ -82,6 +85,7 @@ function sanitizeConfig(raw) {
   if (typeof raw.sound === 'boolean') config.sound = raw.sound;
   if (typeof raw.openAtLogin === 'boolean') config.openAtLogin = raw.openAtLogin;
   if (THEMES.includes(raw.theme)) config.theme = raw.theme;
+  if (ALERT_STYLES.includes(raw.alertStyle)) config.alertStyle = raw.alertStyle;
   return config;
 }
 

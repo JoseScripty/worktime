@@ -14,6 +14,7 @@ contextBridge.exposeInMainWorld('worktime', {
   setPaused: (paused) => ipcRenderer.invoke('pause:set', paused),
   getReminder: () => ipcRenderer.invoke('reminder:get'),
   snooze: (id) => ipcRenderer.invoke('reminder:snooze', id),
+  previewReminder: () => ipcRenderer.invoke('reminder:preview'),
   onChange: (callback) => {
     const listener = () => callback();
     ipcRenderer.on('state:changed', listener);

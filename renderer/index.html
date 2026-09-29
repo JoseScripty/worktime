@@ -69,6 +69,14 @@
         <div class="days" id="days" role="group" aria-label="Días laborales"></div>
 
         <h2 class="section-title">Avisos</h2>
+        <div class="segmented segmented--two" role="radiogroup" aria-label="Tipo de aviso">
+          <label class="segmented__option"><input type="radio" name="alertStyle" value="small" /><span>Pequeño en la esquina</span></label>
+          <label class="segmented__option"><input type="radio" name="alertStyle" value="large" /><span>Grande en pantalla</span></label>
+        </div>
+        <div class="alert-style">
+          <p class="hint">El aviso grande oscurece toda la pantalla hasta que respondas. Esc lo pospone.</p>
+          <button class="btn btn--secondary" type="button" id="previewAlert">Probar aviso</button>
+        </div>
         <label class="field-row">
           <span>Al posponer, volver a avisar en</span>
           <span class="field-row__input"><input class="input input--number" type="number" id="snooze" min="1" max="60" /> min</span>

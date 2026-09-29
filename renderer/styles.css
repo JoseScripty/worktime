@@ -443,6 +443,22 @@ input {
   background: var(--surface-2);
 }
 
+.segmented--two {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.alert-style {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 8px 2px 12px;
+}
+
+.alert-style .hint {
+  margin: 0;
+}
+
 .segmented__option {
   position: relative;
   cursor: pointer;
@@ -603,16 +619,21 @@ input {
 /* ---------- Aviso emergente ---------- */
 
 .popup {
+  height: 100vh;
+  background: var(--surface);
+  overflow: hidden;
+  user-select: none;
+}
+
+.popup__panel {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  height: 100vh;
+  height: 100%;
   padding: 18px 18px 16px;
   border: 1px solid var(--border);
   border-top: 4px solid var(--accent);
   background: var(--surface);
-  overflow: hidden;
-  user-select: none;
   -webkit-app-region: drag;
 }
 
@@ -653,4 +674,74 @@ input {
 
 .popup__actions .btn {
   -webkit-app-region: no-drag;
+}
+
+/* Aviso grande: oscurece toda la pantalla y centra el aviso. */
+
+.popup--large {
+  display: grid;
+  place-items: center;
+  background: rgb(10 8 24 / 0.62);
+}
+
+.popup--large .popup__panel {
+  width: min(620px, calc(100vw - 48px));
+  height: auto;
+  gap: 32px;
+  padding: 44px 44px 36px;
+  border: 0;
+  border-top: 6px solid var(--accent);
+  border-radius: 24px;
+  box-shadow: 0 30px 90px rgb(0 0 0 / 0.45);
+  -webkit-app-region: no-drag;
+  animation: popup-in 0.22s ease-out;
+}
+
+.popup--large .popup__card {
+  flex-direction: column;
+  gap: 18px;
+  text-align: center;
+}
+
+.popup--large .popup__icon {
+  width: 88px;
+  height: 88px;
+}
+
+.popup--large .popup__eyebrow {
+  font-size: 15px;
+}
+
+.popup--large .popup__title {
+  font-size: 34px;
+  line-height: 1.2;
+}
+
+.popup--large .popup__sub {
+  margin-top: 8px;
+  font-size: 17px;
+}
+
+.popup--large .popup__actions {
+  justify-content: center;
+  gap: 12px;
+}
+
+.popup--large .btn {
+  padding: 12px 26px;
+  border-radius: 12px;
+  font-size: 17px;
+}
+
+@keyframes popup-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .popup--large .popup__panel {
+    animation: none;
+  }
 }

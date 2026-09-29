@@ -74,6 +74,27 @@ test('los marcajes desactivados no aparecen', () => {
   assert.equal(dueId(now, s.freshState(now), cfg), null);
 });
 
+test('el orden en pantalla es fijo aunque cambien las horas', () => {
+  // Salida a almorzar antes que la entrada y salida a media mañana: el orden no cambia.
+  const cfg = sanitizeConfig({ reminders: [{ id: 'almuerzo', time: '08:00' }, { id: 'salida', time: '10:00' }] });
+  const now = monday(8, 5);
+  const state = s.freshState(now);
+  assert.deepEqual(
+    s.buildAgenda(cfg, state, now).map((i) => i.id),
+    ['entrada', 'almuerzo', 'regreso', 'reporte', 'salida'],
+  );
+  // Los avisos siguen yendo por hora: toca el de las 08:00 y el próximo es la entrada de las 09:00.
+  assert.equal(dueId(now, state, cfg), 'almuerzo');
+  assert.equal(s.describeNext(cfg, state, now), 'Entrada · hoy 09:00');
+  // A las 09:40 coinciden la entrada (09:00) y el reporte (09:30): primero la entrada.
+  assert.equal(dueId(monday(9, 40), state, cfg), 'entrada');
+});
+
+test('sortForDisplay ordena también días guardados con otro orden', () => {
+  const ids = ['salida', 'reporte', 'entrada', 'regreso', 'almuerzo'].map((id) => ({ id }));
+  assert.deepEqual(s.sortForDisplay(ids).map((i) => i.id), ['entrada', 'almuerzo', 'regreso', 'reporte', 'salida']);
+});
+
 test('el estado guardado de otro día se descarta', () => {
   const now = monday(9, 0);
   const old = { date: '2026-09-27', marked: { entrada: 1 }, snoozedUntil: {}, paused: true };

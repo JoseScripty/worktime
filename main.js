@@ -107,7 +107,7 @@ function historyView() {
         .toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }),
       workday: entry.workday,
       paused: entry.paused,
-      items: (entry.items || []).map((item) => ({
+      items: schedule.sortForDisplay(entry.items || []).map((item) => ({
         ...item,
         markedText: item.markedAt ? schedule.formatTime(item.markedAt) : null,
       })),

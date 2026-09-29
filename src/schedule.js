@@ -6,6 +6,17 @@ const { REPORT_ID } = require('./config');
 
 const MINUTE = 60 * 1000;
 
+// Orden fijo en pantalla (Hoy, bandeja e historial), sin importar las horas configuradas.
+const DISPLAY_ORDER = ['entrada', 'almuerzo', 'regreso', REPORT_ID, 'salida'];
+
+function sortForDisplay(items) {
+  return [...items].sort((a, b) => DISPLAY_ORDER.indexOf(a.id) - DISPLAY_ORDER.indexOf(b.id));
+}
+
+function earliest(items) {
+  return items.reduce((best, item) => (!best || item.start < best.start ? item : best), null);
+}
+
 function dayKey(date) {
   const m = String(date.getMonth() + 1).padStart(2, '0');
   const d = String(date.getDate()).padStart(2, '0');
@@ -105,21 +116,22 @@ function reportItem(config, now) {
   };
 }
 
-// Agenda del día ordenada por hora, con el estado de cada aviso.
+// Agenda del día en el orden fijo de pantalla, con el estado de cada aviso.
 function buildAgenda(config, state, now) {
   const t = now.getTime();
   const items = clockItems(config, now);
   const report = reportItem(config, now);
   if (report) items.push(report);
-  return items.sort((a, b) => a.start - b.start).map((item) => withStatus(item, state, t));
+  return sortForDisplay(items).map((item) => withStatus(item, state, t));
 }
 
-// El aviso que hay que mostrar ahora mismo, o null. alertAt es el último aviso programado ya
-// alcanzado: cuando cambia (p. ej. el segundo aviso del reporte), la ventana emergente se vuelve a abrir.
+// El aviso que hay que mostrar ahora mismo (si coinciden varios, el de hora más temprana), o null.
+// alertAt es el último aviso programado ya alcanzado: cuando cambia (p. ej. el segundo aviso del
+// reporte), la ventana emergente se vuelve a abrir.
 function pickDue(config, state, agenda, now) {
   if (state.paused || !isWorkday(config, now)) return null;
   const t = now.getTime();
-  const item = agenda.find((i) => i.status === 'due' && !(state.snoozedUntil[i.id] > t));
+  const item = earliest(agenda.filter((i) => i.status === 'due' && !(state.snoozedUntil[i.id] > t)));
   if (!item) return null;
   return { ...item, alertAt: Math.max(...item.alerts.filter((a) => a <= t)) };
 }
@@ -135,7 +147,7 @@ function snoozeUntil(config, item, now) {
 // Próximo aviso pendiente, buscando hasta una semana hacia delante.
 function nextReminder(config, state, now) {
   if (isWorkday(config, now) && !state.paused) {
-    const item = buildAgenda(config, state, now).find((i) => i.status === 'upcoming');
+    const item = earliest(buildAgenda(config, state, now).filter((i) => i.status === 'upcoming'));
     if (item) return { label: item.label, time: item.time, when: 'hoy' };
   }
   const first = activeReminders(config)[0];
@@ -197,6 +209,7 @@ function pruneHistory(history, now) {
 
 module.exports = {
   MINUTE,
+  sortForDisplay,
   dayKey,
   formatTime,
   describeAgo,

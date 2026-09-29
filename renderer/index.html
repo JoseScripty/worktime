@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'"
+    />
+    <title>WorkTime</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="page">
+    <header class="header">
+      <img class="header__logo" src="../assets/icon.png" alt="" />
+      <div>
+        <h1 class="header__title">WorkTime</h1>
+        <p class="header__date" id="date"></p>
+      </div>
+    </header>
+
+    <nav class="tabs" role="tablist" aria-label="Secciones">
+      <button class="tabs__tab" type="button" role="tab" aria-selected="true" data-tab="today">Hoy</button>
+      <button class="tabs__tab" type="button" role="tab" aria-selected="false" data-tab="history">Historial</button>
+      <button class="tabs__tab" type="button" role="tab" aria-selected="false" data-tab="settings">Ajustes</button>
+    </nav>
+
+    <main>
+      <section class="panel" id="panel-today" role="tabpanel">
+        <div class="next">
+          <span class="next__label">Próximo aviso</span>
+          <span class="next__value" id="next"></span>
+        </div>
+        <p class="notice" id="notice" hidden></p>
+        <ul class="marks" id="marks"></ul>
+        <label class="switch-row">
+          <span>Pausar recordatorios hoy</span>
+          <input class="switch" type="checkbox" id="paused" />
+        </label>
+      </section>
+
+      <section class="panel" id="panel-history" role="tabpanel" hidden>
+        <p class="hint">Se guardan los últimos 60 días en los que la app estuvo abierta.</p>
+        <p class="notice" id="historyEmpty" hidden>
+          Todavía no hay días anteriores. Los marcajes de hoy aparecerán aquí a partir de mañana.
+        </p>
+        <div class="history" id="history"></div>
+      </section>
+
+      <section class="panel" id="panel-settings" role="tabpanel" hidden>
+        <h2 class="section-title">Marcajes</h2>
+        <div class="reminders" id="reminders"></div>
+
+        <h2 class="section-title">Reporte diario</h2>
+        <div class="report-row">
+          <input class="switch" type="checkbox" id="reportEnabled" aria-label="Activar aviso del reporte" />
+          <input class="input" type="text" id="reportMessage" maxlength="60" aria-label="Mensaje del aviso" />
+        </div>
+        <label class="field-row">
+          <span>Primer aviso</span>
+          <span class="field-row__input"><input class="input input--number" type="number" id="reportFirst" min="5" max="180" /> min antes de la salida</span>
+        </label>
+        <label class="field-row">
+          <span>Si no lo envió, repetir</span>
+          <span class="field-row__input"><input class="input input--number" type="number" id="reportSecond" min="0" max="179" /> min antes de la salida</span>
+        </label>
+        <p class="hint">Pon 0 para avisar una sola vez. Si cambias la hora de salida, estos avisos se mueven con ella.</p>
+
+        <h2 class="section-title">Días laborales</h2>
+        <div class="days" id="days" role="group" aria-label="Días laborales"></div>
+
+        <h2 class="section-title">Avisos</h2>
+        <label class="field-row">
+          <span>Al posponer, volver a avisar en</span>
+          <span class="field-row__input"><input class="input input--number" type="number" id="snooze" min="1" max="60" /> min</span>
+        </label>
+        <label class="field-row">
+          <span>Dejar de insistir pasados</span>
+          <span class="field-row__input"><input class="input input--number" type="number" id="giveUp" min="5" max="240" /> min</span>
+        </label>
+        <p class="hint">El aviso también se retira cuando llega la hora del siguiente marcaje.</p>
+        <label class="switch-row">
+          <span>Sonido al avisar</span>
+          <input class="switch" type="checkbox" id="sound" />
+        </label>
+        <label class="switch-row" id="loginRow">
+          <span id="loginLabel">Iniciar con Windows</span>
+          <input class="switch" type="checkbox" id="openAtLogin" />
+        </label>
+        <div class="approval" id="loginApproval" role="alert" hidden>
+          <p>
+            macOS necesita que apruebes WorkTime en <strong>Ítems de inicio</strong>. Hasta entonces no se abrirá
+            sola al iniciar sesión.
+          </p>
+          <button class="btn btn--secondary" type="button" id="openLoginItems">Abrir Ítems de inicio</button>
+        </div>
+
+        <h2 class="section-title">Apariencia</h2>
+        <div class="segmented" role="radiogroup" aria-label="Tema">
+          <label class="segmented__option"><input type="radio" name="theme" value="system" /><span>Sistema</span></label>
+          <label class="segmented__option"><input type="radio" name="theme" value="light" /><span>Claro</span></label>
+          <label class="segmented__option"><input type="radio" name="theme" value="dark" /><span>Oscuro</span></label>
+        </div>
+        <p class="saved" id="saved" aria-live="polite"></p>
+      </section>
+    </main>
+
+    <script src="index.js"></script>
+  </body>
+</html>
